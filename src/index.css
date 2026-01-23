@@ -1,0 +1,196 @@
+:root {
+  /* Colors - Zinc/Slate Palette (Linear/Vercel inspired) */
+  --color-primary: #18181b;
+  /* Zinc 900 - Deep, rich black */
+  --color-primary-light: #27272a;
+  /* Zinc 800 */
+
+  /* Brand/Accent - Refined Indigo/Violet */
+  --color-accent: #4f46e5;
+  /* Indigo 600 */
+  --color-accent-hover: #4338ca;
+  /* Indigo 700 */
+  --color-accent-subtle: #eff6ff;
+  /* Slate 50 */
+
+  /* Backgrounds */
+  --color-bg-app: #f8fafc;
+  /* Slate 50 - Very subtle tint */
+  --color-bg-surface: #ffffff;
+  /* Pure white */
+  --color-bg-sidebar: #fafafa;
+  /* Slate 50/Zinc 50 */
+
+  /* Chat Bubbles */
+  --color-bg-chat-user: #18181b;
+  /* Zinc 900 (High contrast) */
+  --color-bg-chat-bot: #f4f4f5;
+  /* Zinc 100 */
+
+  /* Text */
+  --color-text-primary: #09090b;
+  /* Zinc 950 */
+  --color-text-secondary: #52525b;
+  /* Zinc 600 */
+  --color-text-tertiary: #a1a1aa;
+  /* Zinc 400 */
+  --color-text-inverse: #ffffff;
+
+  /* Borders - Ultra subtle */
+  --color-border: rgba(0, 0, 0, 0.08);
+  /* Very light border */
+  --color-border-hover: rgba(0, 0, 0, 0.12);
+  /* Slightly darker on hover */
+
+  /* Status */
+  --color-success: #10b981;
+  /* Emerald 500 */
+  --color-error: #ef4444;
+  /* Red 500 */
+  --color-warning: #f59e0b;
+  /* Amber 500 */
+
+  /* Typography */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Radius - Modern & Soft */
+  --radius-sm: 0.375rem;
+  /* 6px */
+  --radius-md: 0.625rem;
+  /* 10px */
+  --radius-lg: 0.875rem;
+  /* 14px */
+  --radius-xl: 1rem;
+  /* 16px */
+  --radius-pill: 9999px;
+
+  /* Shadows - Layered & Smooth */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+
+  /* Transitions */
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Apple-like snap */
+}
+
+:root[data-theme='dark'] {
+  /* Colors - Inverted for Dark Mode */
+  --color-primary: #fafafa;
+  /* Zinc 50 */
+  --color-primary-light: #f4f4f5;
+  /* Zinc 100 */
+
+  /* Backgrounds */
+  --color-bg-app: #09090b;
+  /* Zinc 950 */
+  --color-bg-surface: #18181b;
+  /* Zinc 900 */
+  --color-bg-sidebar: #121215;
+  /* Slightly darker detail */
+
+  /* Text */
+  --color-text-primary: #fafafa;
+  /* Zinc 50 */
+  --color-text-secondary: #a1a1aa;
+  /* Zinc 400 */
+  --color-text-tertiary: #52525b;
+  /* Zinc 600 */
+  --color-text-inverse: #09090b;
+  /* Zinc 950 */
+
+  /* Borders */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.12);
+
+  /* Chat Bubbles */
+  --color-bg-chat-user: #fafafa;
+  /* Zinc 50 */
+  --color-bg-chat-bot: #27272a;
+  /* Zinc 800 */
+
+  /* Shadows - Adjusted for dark mode (subtler) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-app);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Crisp text on Mac */
+  min-height: 100vh;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  /* Modern tight tracking */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar Polish */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-hover);
+  /* Adaptive thumb */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+button,
+input {
+  font-family: inherit;
+  outline: none;
+  /* We will handle focus states manually */
+}
+
+/* Page Transitions */
+.page-enter {
+  animation: pageFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Skeleton Loading Pulse */
+@keyframes skeletonPulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
+}

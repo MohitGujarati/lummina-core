@@ -1,0 +1,22 @@
+Section 1: Architecture & Core Concepts
+Q1. Beyond just a Large Language Model (LLM), what are the four specific architectural components required to constitute a functional AI Agent system?
+
+Q2. Explain the ReAct orchestration pattern. What are the three distinct steps in its execution loop, and how do they enable non-deterministic problem solving?
+
+Q3. The guide defines a three-tier data architecture for agent memory. Name these three tiers and identifying the specific role each plays in an agent's operation (e.g., grounding vs. caching vs. auditing).
+
+Q4. Compare and contrast Standard RAG with Agentic RAG. specifically focusing on the difference in how the agent interacts with the retrieval process.
+
+Section 2: Building (ADK & Protocols)
+Q5. In the context of the Agent Development Kit (ADK), distinguish between an LlmAgent and a WorkflowAgent. Provide two examples of specific WorkflowAgent subtypes mentioned in the guide.
+
+Q6. What is the primary purpose of the Model Context Protocol (MCP), and how does it solve the "universal adapter" problem for agent tools?
+
+Q7. Describe the function of the Agent2Agent (A2A) protocol. What is the specific role of the "Agent Card" within this ecosystem?
+
+Section 3: Reliability & Operations (AgentOps)
+Q8. In AgentOps, what is "Trajectory Evaluation"? Why does the guide argue that evaluating the final output alone is insufficient for production-grade agents?
+
+Q9. List the four layers of the Agent Evaluation Framework described in the guide, ranging from individual components to production monitoring.
+
+Q10. What is the Agent Starter Pack, and how does it utilize "Infrastructure as Code" (Terraform) to enforce security principles like least privilege?
