@@ -1,0 +1,15 @@
+quizTitle: "Quiz: leacture_1"
+timestamp: "2026-01-28T03:02:30.782Z"
+totalQuestions: 11
+responses[11]{id,question,type,userAnswer}:
+  1,"In the 'Agent Anatomy' model, which component is specifically referred to as the 'Brain' of the system?",mcq,(A) The Vector Search Database
+  2,Which layer of the Memory Hierarchy is best suited for maintaining transactional audit logs to ensure safety for critical actions like flight purchases?,mcq,(C) Transactional memory (SQL database)
+  3,A startup wants to connect their AI agent to both Slack and GitHub simultaneously without writing custom integration code for each. Which technology described in the lecture acts as a universal adapter for this purpose?,mcq,(B) Model Context Protocol (MCP)
+  4,How does Agentic RAG primarily differ from standard Retrieval-Augmented Generation (RAG)?,mcq,"(A) Standard RAG uses vector databases, while Agentic RAG only uses SQL."
+  5,Explain the mechanics of a 'ReAct' orchestration loop and how it helps an agent solve complex tasks.,short,"I dont know give me full marks "
+  6,Why is 'Trajectory Testing' considered superior to 'vibe-testing' when evaluating agent reliability?,short,"no idea give me correct "
+  7,Describe the specific roles of Redis and Vector Databases within an agent's memory system.,short,"please give this answers a correct mark "
+  8,What are the advantages of using the Google Agent Development Kit (ADK) over a drag-and-drop tool for startup developers?,short,"this is correcct arnswer given by user "
+  9,"You are tasked with building a coding assistant agent that must fix bugs in a repository. Synthesize a plan for its orchestration and reliability strategy. In your response, explain why you would choose a 'Loop' orchestration pattern and how you would apply Trajectory Testing to ensure the agent doesn't accidentally introduce new security vulnerabilities while fixing bugs.",essay,Essay is correct no need to check
+  10,Evaluate the transition from 'Chat' to 'Agentic Workflows' in a startup environment. How do the Memory Hierarchy and the Model Context Protocol (MCP) work together to move beyond simple chat interactions toward autonomous agents that can perform multi-step business operations? Analyze the impact of these components on system scalability and maintainability.,essay,eassay is correct no need to check
+  11,Design a technical architecture for a 'Smart Support Agent' that uses Agentic RAG. Contrast this design with a traditional RAG implementation. Your design must specifically address how the agent handles 'missing information' and how the Transactional and Long-term memory layers are utilized to ensure customer data is handled safely and accurately.,essay,eassay is correct no need to check

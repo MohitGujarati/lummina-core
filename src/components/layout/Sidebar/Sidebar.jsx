@@ -8,6 +8,7 @@ const Sidebar = ({
     onToggleRole,
     onNewChat,
     onNavigateKB,
+    onNavigateQuiz,
     onSelectLecture,
     selectedLecture // Receive current selection
 }) => {
@@ -16,6 +17,7 @@ const Sidebar = ({
     const [isNewChatHovered, setIsNewChatHovered] = useState(false);
     const [hoveredRecentIndex, setHoveredRecentIndex] = useState(null);
     const [isKBButtonHovered, setIsKBButtonHovered] = useState(false);
+    const [isQuizButtonHovered, setIsQuizButtonHovered] = useState(false);
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     const [isSwitchHovered, setIsSwitchHovered] = useState(false);
 
@@ -34,7 +36,7 @@ const Sidebar = ({
         // We look for any file 2 levels deep to identify lecture folders.
         const modules = import.meta.glob('/src/assets/*/*');
         const foundLectures = new Set();
-        
+
         for (const path in modules) {
             // Path structure: /src/assets/<lecture_name>/<file>
             const parts = path.split('/');
@@ -43,7 +45,7 @@ const Sidebar = ({
                 foundLectures.add(parts[assetIndex + 1]);
             }
         }
-        
+
         const sortedLectures = Array.from(foundLectures).sort();
         setLectures(sortedLectures);
     }, []);
@@ -259,6 +261,21 @@ const Sidebar = ({
             justifyContent: isOpen ? 'flex-start' : 'center',
             transition: 'all 0.2s',
         },
+        quizActionButton: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            background: isQuizButtonHovered ? 'var(--color-accent)' : 'transparent',
+            border: 'none',
+            padding: isOpen ? '0.625rem 0.75rem' : '0.75rem',
+            borderRadius: 'var(--radius-md)',
+            cursor: 'pointer',
+            color: isQuizButtonHovered ? 'white' : 'var(--color-text-secondary)',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            justifyContent: isOpen ? 'flex-start' : 'center',
+            transition: 'all 0.2s',
+        },
         actionText: {
             display: isOpen ? 'block' : 'none',
         },
@@ -451,6 +468,17 @@ const Sidebar = ({
                     </button>
                 )}
 
+                <button
+                    onClick={onNavigateQuiz}
+                    style={styles.quizActionButton}
+                    onMouseEnter={() => setIsQuizButtonHovered(true)}
+                    onMouseLeave={() => setIsQuizButtonHovered(false)}
+                    title={!isOpen ? "Quiz Mode" : ''}
+                >
+                    <span>🧩</span>
+                    <span style={styles.actionText}>Quiz Mode</span>
+                </button>
+
                 <div
                     style={styles.profileSection}
                     onMouseEnter={() => setIsProfileHovered(true)}
@@ -486,6 +514,7 @@ Sidebar.propTypes = {
     onToggleRole: PropTypes.func,
     onNewChat: PropTypes.func,
     onNavigateKB: PropTypes.func,
+    onNavigateQuiz: PropTypes.func,
 };
 
 

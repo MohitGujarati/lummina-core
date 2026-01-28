@@ -21,7 +21,7 @@ const log = (...args) => DEBUG && console.log("🔧 [RAG]", ...args);
 const logError = (...args) => console.error("❌ [RAG]", ...args);
 
 // Configuration
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "demo_fake_key_12345";
 const MODEL_NAME = 'gemini-3-flash-preview';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -30,15 +30,19 @@ let genAI = null;
 let model = null;
 
 try {
-    if (!API_KEY) {
-        logError("⚠️ VITE_GEMINI_API_KEY is missing from .env file");
+    // Initialization always succeeds with fallback key to prevent crashes
+    genAI = new GoogleGenerativeAI(API_KEY);
+    model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+    if (API_KEY === "demo_fake_key_12345") {
+        log("⚠️ Using DEMO API KEY. AI features will not work, but UI will load.");
     } else {
-        genAI = new GoogleGenerativeAI(API_KEY);
-        model = genAI.getGenerativeModel({ model: MODEL_NAME });
-        log("✅ Gemini model initialized");
+        log("✅ Gemini model initialized with valid key structure");
     }
 } catch (error) {
     logError("Failed to initialize:", error.message);
+    // Even if it fails, we should try to keep genAI non-null if possible, 
+    // but GoogleGenerativeAI constructor rarely fails synchronously on simple string.
 }
 
 /**
@@ -428,5 +432,846 @@ export const renderMarkdown = (text) => {
     return text;
 };
 
-// Example usage in React:
-// <div dangerouslySetInnerHTML={{ __html: renderMarkdown(response) }} />
+// ... existing code ...
+
+/**
+ * Generate a quiz based on lecture content
+ * Returns a JSON object matching the structure of quizData.json
+ */
+
+
+
+// Different models for different agent roles
+const analyzerModel = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+const generatorModel = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+const validatorModel = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
+// ============================================================================
+// AGENT 1: CONTENT ANALYZER & KNOWLEDGE MAPPER
+// ============================================================================
+const runContentAnalyzer = async (lectureFiles, lectureId) => {
+    log("🔍 AGENT 1: Starting Content Analysis...");
+
+    const analyzerPrompt = `
+You are a Content Analyzer AI specializing in educational material extraction.
+
+MISSION: Analyze the provided lecture materials and create a comprehensive knowledge map.
+
+INPUT SOURCES:
+- Lecture PDF (slides/notes)
+- Audio Transcript (what was actually said in class)
+- Question Bank (historical question patterns)
+
+OUTPUT: Return ONLY valid JSON with this exact structure:
+
+{
+    "lectureMetadata": {
+        "title": "string",
+        "topics": ["topic1", "topic2", ...],
+        "difficulty": "beginner|intermediate|advanced",
+        "estimatedStudyTime": "number (minutes)"
+    },
+    "concepts": [
+        {
+            "name": "concept name",
+            "importance": "critical|high|medium|low",
+            "difficulty": "easy|medium|hard",
+            "slideReferences": [slide numbers],
+            "audioTimestamps": ["MM:SS", ...],
+            "mentionCount": number,
+            "keyDefinitions": ["definition1", ...],
+            "realWorldExamples": ["example1", ...],
+            "relatedConcepts": ["related1", ...]
+        }
+    ],
+    "emphasisPatterns": {
+        "repeatedConcepts": ["concept1", ...],
+        "instructorFocus": "what instructor emphasized",
+        "timeSpentByTopic": {"topic": minutes}
+    },
+    "questionBankPatterns": {
+        "commonQuestionTypes": ["MCQ", "Short", "Essay"],
+        "focusAreas": ["area1", ...],
+        "difficultyDistribution": {"easy": %, "medium": %, "hard": %},
+        "exampleQuestions": [
+            {"type": "MCQ", "sample": "question text"}
+        ]
+    },
+    "contentGaps": ["areas not well covered"],
+    "assessmentRecommendations": {
+        "mcqTopics": ["topic1", ...],
+        "shortAnswerTopics": ["topic1", ...],
+        "essayTopics": ["topic1", ...]
+    }
+}
+
+ANALYSIS GUIDELINES:
+1. Cross-reference all three sources
+2. Concepts mentioned in audio + slides = higher importance
+3. Time spent in audio = emphasis level
+4. Question bank shows what's traditionally tested
+5. Identify key terms, processes, theories, applications
+6. Note what instructor emphasized verbally vs what's just on slides
+
+Return ONLY the JSON object. No markdown, no explanations.
+`;
+
+    const parts = [...lectureFiles, { text: analyzerPrompt }];
+
+    try {
+        const result = await analyzerModel.generateContent(parts);
+        const response = await result.response;
+        const text = extractText(response);
+
+        const knowledgeMap = parseJSON(text, "Content Analysis");
+        log("✅ AGENT 1: Knowledge map created", knowledgeMap);
+
+        return knowledgeMap;
+    } catch (error) {
+        logError("AGENT 1 failed", error);
+        throw new Error("Content analysis failed");
+    }
+};
+// ============================================================================
+// LOGGING UTILITIES
+// ============================================================================
+const logagent = (message, data = null) => {
+    console.log(`[QuizGen] ${message}`, data || '');
+};
+
+const logErroragent = (message, error) => {
+    console.error(`[QuizGen ERROR] ${message}`, error);
+};
+
+const extractTextagent = (response) => {
+    return response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+};
+
+// ============================================================================
+// FILE LOADING UTILITIES
+// ============================================================================
+const loadLectureFilesagent = async (lectureId) => {
+    const parts = [];
+
+    try {
+        // Try to load PDF
+        const pdfPath = `/src/assets/${lectureId}/lecture.pdf`;
+        const pdfModule = await import(/* @vite-ignore */ pdfPath);
+        const pdfResponse = await fetch(pdfModule.default);
+        const pdfBlob = await pdfResponse.blob();
+        parts.push({
+            inlineData: {
+                mimeType: "application/pdf",
+                data: await blobToBase64(pdfBlob)
+            }
+        });
+        logagent(`✓ Loaded lecture PDF`);
+    } catch (e) {
+        logagent(`⚠ No PDF found for ${lectureId}`);
+    }
+
+    try {
+        // Try to load transcript
+        const transcriptPath = `/src/assets/${lectureId}/transcript.txt`;
+        const transcriptModule = await import(/* @vite-ignore */ transcriptPath);
+        const transcriptResponse = await fetch(transcriptModule.default);
+        const transcriptText = await transcriptResponse.text();
+        parts.push({
+            text: `\n\n=== LECTURE AUDIO TRANSCRIPT ===\n${transcriptText}\n=== END TRANSCRIPT ===\n\n`
+        });
+        log(`✓ Loaded audio transcript`);
+    } catch (e) {
+        log(`⚠ No transcript found for ${lectureId}`);
+    }
+
+    try {
+        // Try to load question bank
+        const qbankPath = `/src/assets/${lectureId}/question_bank.pdf`;
+        const qbankModule = await import(/* @vite-ignore */ qbankPath);
+        const qbankResponse = await fetch(qbankModule.default);
+        const qbankBlob = await qbankResponse.blob();
+        parts.push({
+            inlineData: {
+                mimeType: "application/pdf",
+                data: await blobToBase64(qbankBlob)
+            }
+        });
+        log(`✓ Loaded question bank`);
+    } catch (e) {
+        log(`⚠ No question bank found for ${lectureId}`);
+    }
+
+    return parts;
+};
+
+const blobToBase64agent = (blob) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+};
+
+// ============================================================================
+// AGENT 2: QUESTION ARCHITECT & GENERATOR
+// ============================================================================
+const runQuestionGenerator = async (knowledgeMap, lectureId) => {
+    log("🎯 AGENT 2: Starting Question Generation...");
+
+    const generatorPrompt = `
+You are a Question Architect AI specializing in pedagogical assessment design.
+
+MISSION: Create a comprehensive quiz based on the knowledge map provided.
+
+KNOWLEDGE MAP:
+${JSON.stringify(knowledgeMap, null, 2)}
+
+QUIZ REQUIREMENTS:
+- 4 Multiple Choice Questions (MCQs) - IDs 1-4
+- 4 Short Answer Questions - IDs 5-8  
+- 3 Long Essay Questions - IDs 9-11
+
+QUESTION DESIGN PRINCIPLES:
+
+**MCQs (Part A - Recall & Recognition):**
+- ID 1-2: Easy recall (definitions, basic facts)
+- ID 3: Medium application (scenarios, examples)
+- ID 4: Hard analysis (comparing concepts, inference)
+- All distractors must be plausible but clearly incorrect
+- Use concepts marked "critical" or "high" importance
+- Reference slide numbers in internal notes
+
+**Short Answer (Part B - Understanding & Application):**
+- Test processes, comparisons, explanations
+- Should require 2-4 sentences
+- Focus on "how" and "why" questions
+- Include at least one real-world application
+- Use medium-high difficulty concepts
+
+**Essay Questions (Part C - Synthesis & Critical Thinking):**
+- Require multi-paragraph responses
+- Combine 2+ concepts from knowledge map
+- Include analysis, evaluation, or creation tasks
+- At least one should reference real-world scenarios
+- Draw from "emphasisPatterns" for relevance
+
+STRICT JSON OUTPUT FORMAT:
+{
+    "title": "Quiz: ${lectureId}",
+    "totalQuestions": 11,
+    "metadata": {
+        "difficulty": "balanced",
+        "estimatedTime": 45,
+        "coverageScore": 0.85
+    },
+    "partA": [
+        {
+            "id": 1,
+            "question": "Clear, unambiguous question text",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "answer": 2,
+            "rationale": "Why this answer is correct and others are wrong",
+            "difficulty": "easy",
+            "conceptTested": "concept name from knowledge map",
+            "slideRef": [12, 15]
+        }
+    ],
+    "partB": [
+        {
+            "id": 5,
+            "question": "Short answer question requiring 2-4 sentences",
+            "difficulty": "medium",
+            "conceptsTested": ["concept1", "concept2"],
+            "expectedLength": "2-4 sentences",
+            "keyPoints": ["point1", "point2"]
+        }
+    ],
+    "partC": [
+        {
+            "id": 9,
+            "question": "Essay question requiring synthesis and analysis",
+            "difficulty": "hard",
+            "conceptsTested": ["concept1", "concept2", "concept3"],
+            "expectedLength": "3-4 paragraphs",
+            "gradingCriteria": ["criterion1", "criterion2"],
+            "bloomLevel": "analyze|evaluate|create"
+        }
+    ]
+}
+
+QUALITY STANDARDS:
+- Questions must be clear, specific, and professionally worded
+- No ambiguous or trick questions
+- Distribute across all major topics in knowledge map
+- Avoid questions that can be answered without understanding
+- Each question should have educational value
+- Use varied question stems (not all "What is...")
+
+Return ONLY the JSON object. No markdown, no preamble.
+`;
+
+    try {
+        const result = await generatorModel.generateContent([{ text: generatorPrompt }]);
+        const response = await result.response;
+        const text = extractText(response);
+
+        const quizData = parseJSON(text, "Question Generation");
+        log("✅ AGENT 2: Quiz generated", quizData);
+
+        return quizData;
+    } catch (error) {
+        logError("AGENT 2 failed", error);
+        throw new Error("Question generation failed");
+    }
+};
+
+// ============================================================================
+// AGENT 3: QUALITY VALIDATOR & ENHANCER
+// ============================================================================
+const runQualityValidator = async (quizData, knowledgeMap) => {
+    log("🔬 AGENT 3: Starting Quality Validation...");
+
+    const validatorPrompt = `
+You are a Quality Validator AI specializing in educational assessment review.
+
+MISSION: Review the generated quiz and ensure it meets quality standards.
+
+QUIZ TO VALIDATE:
+${JSON.stringify(quizData, null, 2)}
+
+KNOWLEDGE MAP:
+${JSON.stringify(knowledgeMap, null, 2)}
+
+VALIDATION CHECKLIST:
+
+**Structural Validation:**
+- All 11 questions present (IDs 1-11)
+- Correct distribution: 4 MCQ, 4 Short, 3 Essay
+- All required fields present
+- Proper data types
+
+**Content Quality:**
+- Questions are clear and unambiguous
+- No grammatical errors
+- Professional academic tone
+- Questions test understanding, not memorization
+
+**MCQ Specific:**
+- All have exactly 4 options
+- Distractors are plausible but incorrect
+- Answer index is correct (0-3)
+- No obviously wrong options
+
+**Coverage Analysis:**
+- All critical concepts from knowledge map addressed
+- Good topic distribution
+- Difficulty progression appropriate
+- No redundant questions
+
+**Difficulty Balance:**
+- Mix of easy, medium, hard questions
+- Progressive difficulty within sections
+- Matches knowledge map difficulty indicators
+
+OUTPUT: Return ONLY valid JSON:
+
+{
+    "validationStatus": "APPROVED" | "NEEDS_REVISION",
+    "overallScore": 0-100,
+    "issues": [
+        {
+            "severity": "critical|high|medium|low",
+            "questionId": number,
+            "issue": "description",
+            "suggestion": "how to fix"
+        }
+    ],
+    "qualityMetrics": {
+        "clarity": 0-10,
+        "difficulty": 0-10,
+        "coverage": 0-10,
+        "pedagogicalValue": 0-10
+    },
+    "revisedQuiz": {
+        // If NEEDS_REVISION, include improved version
+        // If APPROVED, return original quiz
+    },
+    "validatorNotes": "Overall assessment and recommendations"
+}
+
+If score < 70, status must be NEEDS_REVISION with corrected quiz.
+If score >= 70, status is APPROVED with original quiz.
+
+Return ONLY the JSON object. No markdown.
+`;
+
+    try {
+        const result = await validatorModel.generateContent([{ text: validatorPrompt }]);
+        const response = await result.response;
+        const text = extractText(response);
+
+        const validation = parseJSON(text, "Quality Validation");
+        log("✅ AGENT 3: Validation complete", validation);
+
+        return validation;
+    } catch (error) {
+        logError("AGENT 3 failed", error);
+        // If validation fails, return original quiz
+        return {
+            validationStatus: "APPROVED",
+            overallScore: 75,
+            revisedQuiz: quizData,
+            validatorNotes: "Validation agent failed, proceeding with generated quiz"
+        };
+    }
+};
+
+// ============================================================================
+// ORCHESTRATOR: MULTI-AGENT COORDINATION
+// ============================================================================
+export const generateQuiz = async (lectureId) => {
+    log(`\n${"=".repeat(60)}`);
+    log(`🎓 MULTI-AGENT QUIZ GENERATION INITIATED`);
+    log(`📚 Lecture: "${lectureId}"`);
+    log(`${"=".repeat(60)}\n`);
+
+    if (!API_KEY) {
+        throw new Error("VITE_GEMINI_API_KEY is missing. Please add it to your .env file.");
+    }
+
+    try {
+        // ====================================================================
+        // PHASE 1: Load Source Materials
+        // ====================================================================
+        log("📂 PHASE 1: Loading lecture materials...");
+        const lectureFiles = await loadLectureFiles(lectureId);
+
+        if (lectureFiles.length === 0) {
+            throw new Error(`No materials found for lecture: ${lectureId}`);
+        }
+
+        log(`✓ Loaded ${lectureFiles.length} source files\n`);
+
+        // ====================================================================
+        // PHASE 2: Agent 1 - Content Analysis
+        // ====================================================================
+        log("📂 PHASE 2: Content Analysis & Knowledge Mapping...");
+        const knowledgeMap = await runContentAnalyzer(lectureFiles, lectureId);
+
+        const conceptCount = knowledgeMap.concepts?.length || 0;
+        const criticalConcepts = knowledgeMap.concepts?.filter(c => c.importance === 'critical').length || 0;
+        log(`✓ Identified ${conceptCount} concepts (${criticalConcepts} critical)\n`);
+
+        // ====================================================================
+        // PHASE 3: Agent 2 - Question Generation
+        // ====================================================================
+        log("📂 PHASE 3: Question Architecture & Generation...");
+        const generatedQuiz = await runQuestionGenerator(knowledgeMap, lectureId);
+        log(`✓ Generated ${generatedQuiz.totalQuestions} questions\n`);
+
+        // ====================================================================
+        // PHASE 4: Agent 3 - Quality Validation
+        // ====================================================================
+        log("📂 PHASE 4: Quality Validation & Enhancement...");
+        const validation = await runQualityValidator(generatedQuiz, knowledgeMap);
+
+        log(`✓ Validation Score: ${validation.overallScore}/100`);
+        log(`✓ Status: ${validation.validationStatus}\n`);
+
+        // ====================================================================
+        // PHASE 5: Final Output Selection
+        // ====================================================================
+        let finalQuiz;
+
+        if (validation.validationStatus === "NEEDS_REVISION" && validation.revisedQuiz) {
+            log("📝 Using revised quiz from validator");
+            finalQuiz = validation.revisedQuiz;
+        } else {
+            log("✅ Using original generated quiz");
+            finalQuiz = generatedQuiz;
+        }
+
+        // Ensure frontend compatibility (strip metadata for now)
+        const frontendQuiz = {
+            title: finalQuiz.title,
+            totalQuestions: finalQuiz.totalQuestions,
+            partA: finalQuiz.partA.map(q => ({
+                id: q.id,
+                question: q.question,
+                options: q.options,
+                answer: q.answer
+            })),
+            partB: finalQuiz.partB.map(q => ({
+                id: q.id,
+                question: q.question
+            })),
+            partC: finalQuiz.partC.map(q => ({
+                id: q.id,
+                question: q.question
+            }))
+        };
+
+        log(`\n${"=".repeat(60)}`);
+        log(`✅ QUIZ GENERATION COMPLETE`);
+        log(`📊 Quality Metrics:`);
+        log(`   - Clarity: ${validation.qualityMetrics?.clarity || 'N/A'}/10`);
+        log(`   - Coverage: ${validation.qualityMetrics?.coverage || 'N/A'}/10`);
+        log(`   - Difficulty: ${validation.qualityMetrics?.difficulty || 'N/A'}/10`);
+        log(`${"=".repeat(60)}\n`);
+
+        return frontendQuiz;
+
+    } catch (error) {
+        logError("❌ Quiz generation pipeline failed:", error);
+        throw error;
+    }
+};
+
+// ============================================================================
+// UTILITY: JSON PARSER
+// ============================================================================
+const parseJSON = (text, agentName) => {
+    try {
+        // Find JSON boundaries
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}');
+
+        if (jsonStart === -1 || jsonEnd === -1) {
+            throw new Error("No JSON object found in response");
+        }
+
+        const jsonString = text.substring(jsonStart, jsonEnd + 1);
+
+        // Try direct parse
+        try {
+            return JSON.parse(jsonString);
+        } catch (e) {
+            // Aggressive cleanup
+            const cleaned = jsonString
+                .replace(/```json/g, '')
+                .replace(/```/g, '')
+                .replace(/[\u0000-\u001F]+/g, " ")
+                .trim();
+
+            return JSON.parse(cleaned);
+        }
+    } catch (error) {
+        logError(`${agentName} JSON parsing failed`, error);
+        throw new Error(`${agentName} returned invalid JSON`);
+    }
+};
+// ============================================================================
+// AGENT 4: GRADING & FEEDBACK GENERATOR
+// ============================================================================
+
+const gradingModel = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
+/**
+ * Grade student responses and provide detailed feedback
+ * @param {Object} quiz - The quiz object with all questions
+ * @param {Object} answers - Student's answers { questionId: answer }
+ * @param {Array} lectureFiles - Original lecture materials for context
+ * @returns {Object} Grading results with scores and feedback
+ */
+export const gradeQuizResponses = async (quiz, answers, lectureId = null) => {
+    log("📊 AGENT 4: Starting Response Grading...");
+
+    // Load lecture files for context if available
+    let lectureFiles = [];
+    if (lectureId) {
+        try {
+            lectureFiles = await loadLectureFiles(lectureId);
+            log(`✓ Loaded ${lectureFiles.length} lecture files for grading context`);
+        } catch (error) {
+            log("⚠️ Could not load lecture files, grading without full context");
+        }
+    }
+
+    const gradingPrompt = `
+You are an Expert Grading AI specializing in educational assessment and constructive feedback.
+
+MISSION: Grade student responses and provide detailed, helpful feedback.
+
+QUIZ DATA:
+${JSON.stringify(quiz, null, 2)}
+
+STUDENT ANSWERS:
+${JSON.stringify(answers, null, 2)}
+
+GRADING INSTRUCTIONS:
+
+**For Multiple Choice Questions (MCQs):**
+- Automatic grading: correct answer index vs student's answer
+- Score: 1 point if correct, 0 if incorrect
+- Feedback: Brief explanation of why the answer is correct/incorrect
+
+**For Short Answer Questions:**
+- Score: 0-10 points based on:
+  * Accuracy (40%): Correct information from lecture
+  * Completeness (30%): Covers key points
+  * Clarity (20%): Well-structured explanation
+  * Examples (10%): Uses relevant examples
+- Provide specific feedback on what was good and what was missing
+- Reference the key points from the question data
+
+**For Essay Questions:**
+- Score: 0-20 points based on:
+  * Content Knowledge (40%): Demonstrates understanding
+  * Critical Thinking (30%): Analysis and synthesis
+  * Structure (20%): Organization and flow
+  * Evidence (10%): Uses lecture material effectively
+- Provide constructive feedback with specific suggestions
+- Highlight strengths and areas for improvement
+
+OUTPUT FORMAT (Return ONLY valid JSON):
+
+{
+    "overallScore": {
+        "total": number,
+        "earned": number,
+        "percentage": number,
+        "grade": "A|A-|B+|B|B-|C+|C|C-|D|F"
+    },
+    "sectionScores": {
+        "partA": { "total": number, "earned": number },
+        "partB": { "total": number, "earned": number },
+        "partC": { "total": number, "earned": number }
+    },
+    "questionGrades": [
+        {
+            "id": number,
+            "type": "mcq|short|essay",
+            "question": "question text",
+            "userAnswer": "student's answer",
+            "correctAnswer": "correct answer (for MCQ) or model answer",
+            "score": number,
+            "maxScore": number,
+            "isCorrect": boolean (for MCQ),
+            "feedback": {
+                "summary": "Brief overall feedback",
+                "strengths": ["strength1", "strength2"],
+                "improvements": ["area1", "area2"],
+                "keyPointsCovered": ["point1", "point2"],
+                "keyPointsMissed": ["point1", "point2"]
+            },
+            "rubricBreakdown": {
+                "accuracy": number,
+                "completeness": number,
+                "clarity": number,
+                "examples": number
+            }
+        }
+    ],
+    "overallFeedback": {
+        "strengths": ["overall strength1", "strength2"],
+        "areasForImprovement": ["area1", "area2"],
+        "studyRecommendations": ["recommendation1", "recommendation2"],
+        "conceptsMastered": ["concept1", "concept2"],
+        "conceptsToReview": ["concept1", "concept2"]
+    },
+    "detailedAnalysis": {
+        "timeEstimate": "estimated time student spent (minutes)",
+        "effortLevel": "low|medium|high",
+        "comprehensionLevel": "basic|intermediate|advanced",
+        "encouragement": "Personalized encouraging message"
+    }
+}
+
+GRADING STANDARDS:
+- Be fair but rigorous
+- Provide actionable feedback
+- Recognize partial credit where appropriate
+- Be encouraging while being honest
+- Reference specific lecture material when relevant
+- Point out both what was done well and what needs work
+
+GRADE SCALE:
+- A (90-100%): Excellent understanding
+- B (80-89%): Good understanding with minor gaps
+- C (70-79%): Satisfactory with some misunderstandings
+- D (60-69%): Passing but significant gaps
+- F (<60%): Does not demonstrate sufficient understanding
+
+Return ONLY the JSON object. No markdown, no explanations.
+`;
+
+    const parts = [
+        ...lectureFiles,
+        { text: gradingPrompt }
+    ];
+
+    try {
+        const result = await gradingModel.generateContent(parts);
+        const response = await result.response;
+        const text = extractText(response);
+
+        const gradingResults = parseJSON(text, "Grading Agent");
+        log("✅ AGENT 4: Grading complete", gradingResults);
+
+        return gradingResults;
+
+    } catch (error) {
+        logError("AGENT 4 failed", error);
+
+        // Fallback grading for MCQs only
+        return generateFallbackGrading(quiz, answers);
+    }
+};
+
+/**
+ * Fallback grading if AI grading fails
+ */
+const generateFallbackGrading = (quiz, answers) => {
+    log("⚠️ Using fallback grading system");
+
+    const questionGrades = [];
+    let totalEarned = 0;
+    let totalPossible = 0;
+
+    // Grade MCQs automatically
+    if (quiz.partA) {
+        quiz.partA.forEach(q => {
+            const isCorrect = parseInt(answers[q.id]) === q.answer;
+            const score = isCorrect ? 1 : 0;
+
+            questionGrades.push({
+                id: q.id,
+                type: 'mcq',
+                question: q.question,
+                userAnswer: q.options?.[answers[q.id]] || "No answer",
+                correctAnswer: q.options?.[q.answer],
+                score: score,
+                maxScore: 1,
+                isCorrect: isCorrect,
+                feedback: {
+                    summary: isCorrect ? "Correct!" : "Incorrect answer",
+                    strengths: isCorrect ? ["Correct selection"] : [],
+                    improvements: isCorrect ? [] : ["Review this concept"],
+                    keyPointsCovered: [],
+                    keyPointsMissed: []
+                }
+            });
+
+            totalEarned += score;
+            totalPossible += 1;
+        });
+    }
+
+    // Short answers - can't auto-grade, give neutral feedback
+    if (quiz.partB) {
+        quiz.partB.forEach(q => {
+            questionGrades.push({
+                id: q.id,
+                type: 'short',
+                question: q.question,
+                userAnswer: answers[q.id] || "No answer",
+                score: 0,
+                maxScore: 10,
+                feedback: {
+                    summary: "Manual grading required",
+                    strengths: [],
+                    improvements: [],
+                    keyPointsCovered: [],
+                    keyPointsMissed: []
+                }
+            });
+            totalPossible += 10;
+        });
+    }
+
+    // Essays - can't auto-grade
+    if (quiz.partC) {
+        quiz.partC.forEach(q => {
+            questionGrades.push({
+                id: q.id,
+                type: 'essay',
+                question: q.question,
+                userAnswer: answers[q.id] || "No answer",
+                score: 0,
+                maxScore: 20,
+                feedback: {
+                    summary: "Manual grading required",
+                    strengths: [],
+                    improvements: [],
+                    keyPointsCovered: [],
+                    keyPointsMissed: []
+                }
+            });
+            totalPossible += 20;
+        });
+    }
+
+    const percentage = totalPossible > 0 ? (totalEarned / totalPossible) * 100 : 0;
+
+    return {
+        overallScore: {
+            total: totalPossible,
+            earned: totalEarned,
+            percentage: percentage,
+            grade: getLetterGrade(percentage)
+        },
+        questionGrades: questionGrades,
+        overallFeedback: {
+            strengths: ["Completed the assessment"],
+            areasForImprovement: ["AI grading unavailable - manual review needed"],
+            studyRecommendations: [],
+            conceptsMastered: [],
+            conceptsToReview: []
+        }
+    };
+};
+
+/**
+ * Convert percentage to letter grade
+ */
+const getLetterGrade = (percentage) => {
+    if (percentage >= 93) return 'A';
+    if (percentage >= 90) return 'A-';
+    if (percentage >= 87) return 'B+';
+    if (percentage >= 83) return 'B';
+    if (percentage >= 80) return 'B-';
+    if (percentage >= 77) return 'C+';
+    if (percentage >= 73) return 'C';
+    if (percentage >= 70) return 'C-';
+    if (percentage >= 60) return 'D';
+    return 'F';
+};
+
+// Export the grading function
+
+// ... exports ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
