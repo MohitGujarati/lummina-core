@@ -74,6 +74,7 @@ const QuizModeScreen = ({ onExit }) => {
 
             setActiveQuiz({
                 title: title,
+                lectureId: lecture,
                 questions: items
             });
             addToast("Quiz Ready", "success");
@@ -88,6 +89,7 @@ const QuizModeScreen = ({ onExit }) => {
 
             setActiveQuiz({
                 title: displayTitle,
+                lectureId: lecture,
                 questions: items
             });
         } finally {
@@ -266,7 +268,7 @@ const StepperQuizInterface = ({ quiz, onClose, onExit, onReview, showReview }) =
     }
 
     if (showReview) {
-        return <QuizReview quiz={quiz} answers={answers} onExit={onClose} />;
+        return <QuizReview quiz={quiz} answers={answers} lectureId={quiz.lectureId} onExit={onClose} />;
     }
 
     return (

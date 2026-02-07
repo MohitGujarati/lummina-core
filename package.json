@@ -10,12 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.40.0",
     "@google/generative-ai": "^0.24.1",
     "@toon-format/toon": "^2.1.0",
     "clsx": "^2.1.1",
+    "dagre": "^0.8.5",
+    "framer-motion": "^12.29.2",
+    "jspdf": "^4.0.0",
     "prop-types": "^15.8.1",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-draggable": "^4.5.0",
+    "reactflow": "^11.11.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

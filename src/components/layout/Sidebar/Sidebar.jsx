@@ -9,6 +9,7 @@ const Sidebar = ({
     onNewChat,
     onNavigateKB,
     onNavigateQuiz,
+    onNavigateViva, // New prop
     onSelectLecture,
     selectedLecture // Receive current selection
 }) => {
@@ -20,6 +21,7 @@ const Sidebar = ({
     const [isQuizButtonHovered, setIsQuizButtonHovered] = useState(false);
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     const [isSwitchHovered, setIsSwitchHovered] = useState(false);
+    const [isVivaButtonHovered, setIsVivaButtonHovered] = useState(false); // New state
 
     // Lecture Selection State
     const [lectures, setLectures] = useState([]);
@@ -479,6 +481,18 @@ const Sidebar = ({
                     <span style={styles.actionText}>Quiz Mode</span>
                 </button>
 
+                {/* NEW: Viva Mode Button */}
+                <button
+                    onClick={onNavigateViva}
+                    style={{ ...styles.quizActionButton, background: isVivaButtonHovered ? 'var(--color-accent)' : 'transparent' }}
+                    onMouseEnter={() => setIsVivaButtonHovered(true)}
+                    onMouseLeave={() => setIsVivaButtonHovered(false)}
+                    title={!isOpen ? "Oral Viva" : ''}
+                >
+                    <span>🎙️</span>
+                    <span style={styles.actionText}>Oral Viva Mode</span>
+                </button>
+
                 <div
                     style={styles.profileSection}
                     onMouseEnter={() => setIsProfileHovered(true)}
@@ -492,14 +506,6 @@ const Sidebar = ({
                             <span style={styles.roleName}>
                                 {currentRole === ROLES.TEACHER ? 'Teacher' : 'Student'}
                             </span>
-                            {/* <button
-                                style={styles.switchLink}
-                                onClick={onToggleRole}
-                                onMouseEnter={() => setIsSwitchHovered(true)}
-                                onMouseLeave={() => setIsSwitchHovered(false)}
-                            >
-                                Switch Role
-                            </button> */}
                         </div>
                     )}
                 </div>
@@ -515,6 +521,7 @@ Sidebar.propTypes = {
     onNewChat: PropTypes.func,
     onNavigateKB: PropTypes.func,
     onNavigateQuiz: PropTypes.func,
+    onNavigateViva: PropTypes.func, // Added PropType
 };
 
 

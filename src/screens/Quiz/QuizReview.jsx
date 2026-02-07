@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { gradeQuizResponses } from '../../services/gemini';
+import CheatSheetCard from './CheatSheetCard';
 
 const QuizReview = ({ quiz, answers, lectureId, onExit }) => {
     const [gradingResults, setGradingResults] = useState(null);
@@ -86,6 +87,15 @@ const QuizReview = ({ quiz, answers, lectureId, onExit }) => {
                             )}
                         </div>
                     </div>
+
+                    {/* Cheat Sheet Generator */}
+                    <CheatSheetCard
+                        quizTitle={quiz.title}
+                        weakPoints={gradingResults.overallFeedback?.areasForImprovement || []}
+                        quiz={quiz}
+                        answers={answers}
+                        lectureId={lectureId}
+                    />
                 </div>
 
                 {/* Overall Feedback Card */}

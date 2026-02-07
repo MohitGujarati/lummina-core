@@ -6,6 +6,7 @@ import KnowledgeBaseScreen from './screens/KnowledgeBase/KnowledgeBaseScreen';
 import SettingsScreen from './screens/Settings/SettingsScreen';
 import LoginScreen from './screens/Auth/LoginScreen';
 import QuizModeScreen from './screens/Quiz/QuizModeScreen';
+import VivaModeScreen from './screens/Viva/VivaModeScreen';
 import { ROLES } from './config/constants';
 
 
@@ -64,6 +65,10 @@ function App() {
     setActiveScreen('quiz');
   };
 
+  const handleNavigateViva = () => {
+    setActiveScreen('viva');
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentRole(ROLES.STUDENT);
@@ -104,6 +109,7 @@ function App() {
             onNewChat={handleNewChat}
             onNavigateKB={handleNavigateKB}
             onNavigateQuiz={handleNavigateQuiz}
+            onNavigateViva={handleNavigateViva}
             onSelectLecture={setSelectedLecture}
             selectedLecture={selectedLecture}
           />
@@ -120,6 +126,7 @@ function App() {
         )}
         {activeScreen === 'kb' && <KnowledgeBaseScreen />}
         {activeScreen === 'quiz' && <QuizModeScreen onExit={() => setActiveScreen('chat')} />}
+        {activeScreen === 'viva' && <VivaModeScreen onExit={() => setActiveScreen('chat')} />}
       </ChatLayout>
     </div>
   );

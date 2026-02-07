@@ -1,22 +1,89 @@
-Section 1: Architecture & Core Concepts
-Q1. Beyond just a Large Language Model (LLM), what are the four specific architectural components required to constitute a functional AI Agent system?
+Based on the provided IEEE report, here is the question bank without the answers.
 
-Q2. Explain the ReAct orchestration pattern. What are the three distinct steps in its execution loop, and how do they enable non-deterministic problem solving?
+### **I. Problem Definition & Basics**
 
-Q3. The guide defines a three-tier data architecture for agent memory. Name these three tiers and identifying the specific role each plays in an agent's operation (e.g., grounding vs. caching vs. auditing).
+1. According to the abstract, what specific phenomenon caused by the rapid growth of digital media makes it difficult for users to locate relevant news? 
 
-Q4. Compare and contrast Standard RAG with Agentic RAG. specifically focusing on the difference in how the agent interacts with the retrieval process.
 
-Section 2: Building (ADK & Protocols)
-Q5. In the context of the Agent Development Kit (ADK), distinguish between an LlmAgent and a WorkflowAgent. Provide two examples of specific WorkflowAgent subtypes mentioned in the guide.
+2. What are the three traditional categories of recommendation systems mentioned in the introduction? 
 
-Q6. What is the primary purpose of the Model Context Protocol (MCP), and how does it solve the "universal adapter" problem for agent tools?
 
-Q7. Describe the function of the Agent2Agent (A2A) protocol. What is the specific role of the "Agent Card" within this ecosystem?
+3. Which common problem in Collaborative Filtering (CF) occurs because users have not interacted with enough items? 
 
-Section 3: Reliability & Operations (AgentOps)
-Q8. In AgentOps, what is "Trajectory Evaluation"? Why does the guide argue that evaluating the final output alone is insufficient for production-grade agents?
 
-Q9. List the four layers of the Agent Evaluation Framework described in the guide, ranging from individual components to production monitoring.
+4. Why do traditional Content-Based Filtering approaches using TF-IDF often fail to provide high-quality recommendations? 
 
-Q10. What is the Agent Starter Pack, and how does it utilize "Infrastructure as Code" (Terraform) to enforce security principles like least privilege?
+
+5. What is the estimated number of news articles produced every day, creating the challenge of "information overload"? 
+
+
+
+### **II. System Architecture & Methodology**
+
+6. Which specific pre-trained SBERT model was chosen for this system, and why was it preferred over standard BERT? 
+
+
+7. What are the three specific data points aggregated to create the "Rich User Profile"? 
+
+
+8. In the "Rich User Profile" calculation (), what specific weight is assigned to the "Liked" articles vector ()? 
+
+
+9. What is the purpose of "Semantic Expansion" regarding category tags like "Technology" or "Health"? 
+
+
+10. Which mathematical formula is used to apply temporal decay to the reading history vector ()? 
+
+
+
+### **III. Algorithms & Features**
+
+11. Which algorithm is implemented to re-rank the final feed to ensure diversity and avoid redundancy? 
+
+
+12. How does the "Weighted Vector Fusion" strategy prioritize user data when creating the user centroid ()? 
+
+
+13. During "Zero-Shot Classification," what threshold score must be met for an article to be assigned a specific category instead of "General"? 
+
+
+14. What specific library does the `NewsRecommender` class utilize to bypass the cross-encoder architecture? 
+
+
+15. How does the system ensure recommendations are current regarding the "forceMaxDataTimeWindow" setting? 
+
+
+
+### **IV. Performance & Evaluation**
+
+16. In the comparative analysis, what was the recorded latency for the proposed SBERT model compared to the Standard BERT model? 
+
+
+17. When visualizing the embedding vectors, what type of distribution did the SBERT model exhibit that indicated "dense information packing"? 
+
+
+18. What specific "weak signal" characteristics did the Classical Word2Vec embeddings show in the visualization? 
+
+
+19. How much faster is the SBERT model for semantic searches compared to finding the most similar pair using a standard BERT cross-encoder? 
+
+
+20. What was the observed benefit of using MMR over the "Baseline: Pure Cosine" sorting method during testing? 
+
+
+
+### **V. Limitations & Future Work**
+
+21. What are two distinct limitations of the current system architecture regarding scalability and language? 
+
+
+22. How would integrating a Vector Database like Pinecone or Milvus improve the search complexity of the system? 
+
+
+23. What specific type of neural network is proposed to capture deeper semantic relationships based on shared entity connections? 
+
+
+24. What risk does the system face by heavily weighting user "Likes" (60%), and what is this phenomenon called? 
+
+
+25. Which Reinforcement Learning (RL) agent is suggested to maximize long-term user retention in future iterations?
