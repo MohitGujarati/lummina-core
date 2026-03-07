@@ -356,7 +356,7 @@ const LandingPage = ({ onGetStarted }) => {
                 borderBottom: `1px solid ${LINE}`,
             }}>
                 <h2 style={{ fontSize: 'clamp(2.2rem, 5vw, 4rem)', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, marginBottom: 16 }}>
-                    Study smart.<br />Not hard.
+                    Study smart with Lummina.
                 </h2>
                 <p style={{ fontSize: '0.9rem', color: MUTED2, fontWeight: 300, marginBottom: 36 }}>
                     Join students who stopped re-reading and started actually learning.
