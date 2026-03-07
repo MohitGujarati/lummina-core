@@ -5,6 +5,7 @@ import ChatScreen from './screens/Chat/ChatScreen';
 import KnowledgeBaseScreen from './screens/KnowledgeBase/KnowledgeBaseScreen';
 import SettingsScreen from './screens/Settings/SettingsScreen';
 import LoginScreen from './screens/Auth/LoginScreen';
+import LandingPage from './screens/LandingPage/LandingPage';
 import QuizModeScreen from './screens/Quiz/QuizModeScreen';
 import VivaModeScreen from './screens/Viva/VivaModeScreen';
 import { ROLES } from './config/constants';
@@ -16,12 +17,15 @@ function App() {
     return localStorage.getItem('lummina_is_logged_in') === 'true';
   });
 
+  const [showLanding, setShowLanding] = useState(() => {
+    return localStorage.getItem('lummina_is_logged_in') !== 'true';
+  });
+
   const [currentRole, setCurrentRole] = useState(() => {
     return localStorage.getItem('lummina_user_role') || ROLES.STUDENT;
   });
 
   const [activeScreen, setActiveScreen] = useState('chat'); // 'chat' or 'kb'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedLecture, setSelectedLecture] = useState(null);
 
   // Login Handler
@@ -87,6 +91,9 @@ function App() {
 
   // Auth Guard
   if (!isLoggedIn) {
+    if (showLanding) {
+      return <LandingPage onGetStarted={() => setShowLanding(false)} />;
+    }
     return <LoginScreen onLogin={handleLogin} />;
   }
 
@@ -103,7 +110,7 @@ function App() {
       <ChatLayout
         sidebar={
           <Sidebar
-            isOpen={isSidebarOpen}
+            isOpen={true} // previously uses isSidebarOpen which we removed, just making it always true for now
             currentRole={currentRole}
             onToggleRole={toggleRole}
             onNewChat={handleNewChat}

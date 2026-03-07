@@ -8,19 +8,33 @@ import { useToast } from '../../context/ToastContext';
 const LoginScreen = ({ onLogin }) => {
     const { addToast } = useToast();
     const [selectedRole, setSelectedRole] = useState(ROLES.STUDENT);
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    // Hardcoded credentials
+    const VALID_USERNAME = 'GeminiTestUser';
+    const VALID_PASSWORD = 'ABI$*INTERN#&';
 
     const handleLogin = (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
+
+        // Validate credentials
         setTimeout(() => {
-            onLogin(selectedRole);
-            addToast(`Welcome back, ${selectedRole === ROLES.TEACHER ? 'Professor' : 'Student'}!`, 'success');
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                onLogin(selectedRole);
+                addToast(`Welcome back, ${selectedRole === ROLES.TEACHER ? 'Professor' : 'Student'}!`, 'success');
+            } else {
+                addToast('Invalid username or password. Please try again.', 'error');
+            }
             setIsLoading(false);
-        }, 1000);
+        }, 800);
+    };
+
+    const handleGoogleSignIn = (e) => {
+        e.preventDefault();
+        addToast('Google Sign-In is disabled. Please use username and password.', 'info');
     };
 
     const styles = {
@@ -165,11 +179,11 @@ const LoginScreen = ({ onLogin }) => {
 
                 <form style={styles.form} onSubmit={handleLogin}>
                     <Input
-                        label={UI_TEXT.LOGIN.EMAIL_LABEL}
-                        placeholder={UI_TEXT.LOGIN.EMAIL_PLACEHOLDER}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        type="email"
+                        label="Username"
+                        placeholder="Enter your username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        type="text"
                         required
                     />
                     <Input
@@ -192,7 +206,7 @@ const LoginScreen = ({ onLogin }) => {
                     <div style={styles.line} />
                 </div>
 
-                <Button variant="secondary" style={styles.googleBtn} onClick={() => onLogin(selectedRole)}>
+                <Button variant="secondary" style={styles.googleBtn} onClick={handleGoogleSignIn}>
                     <svg width="18" height="18" viewBox="0 0 24 24">
                         <path
                             fill="currentColor"
