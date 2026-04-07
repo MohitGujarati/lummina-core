@@ -5,7 +5,7 @@ import Input from '../../components/common/Input/Input';
 
 import { UI_TEXT } from '../../config/constants';
 
-const KnowledgeBaseScreen = () => {
+const KnowledgeBaseScreen = ({ onBack }) => {
     const [isDropZoneHovered, setIsDropZoneHovered] = useState(false);
     const [hoveredFileIndex, setHoveredFileIndex] = useState(null);
     const [hoveredLinkIndex, setHoveredLinkIndex] = useState(null);
@@ -243,7 +243,8 @@ const KnowledgeBaseScreen = () => {
         },
         pageTitle: {
             fontSize: '1.875rem',
-            fontWeight: 700,
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 500,
             color: 'var(--color-text-primary)',
             marginBottom: '0.5rem',
             letterSpacing: '-0.02em',
@@ -626,6 +627,20 @@ const KnowledgeBaseScreen = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
+        },
+        backButton: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'none',
+            border: 'none',
+            color: 'var(--color-text-secondary)',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            cursor: 'pointer',
+            padding: 0,
+            marginBottom: '1rem',
+            transition: 'color 0.2s',
         }
     };
 
@@ -633,6 +648,20 @@ const KnowledgeBaseScreen = () => {
         <div style={styles.container}>
             <header style={styles.pageHeader}>
                 <div>
+                    {onBack && (
+                        <button 
+                            style={styles.backButton} 
+                            onClick={onBack}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                            Back to Chat
+                        </button>
+                    )}
                     <h1 style={styles.pageTitle}>{UI_TEXT.KB.HEADER.TITLE}</h1>
                     <p style={styles.pageSubtitle}>{UI_TEXT.KB.HEADER.SUBTITLE}</p>
                 </div>

@@ -1,184 +1,122 @@
 /* ============================================================================
-   VIVA EXAM ENGINE (Gemini 2.0 Flash)
+   VIVA EXAM ENGINE — uses @google/genai (v1.40+, current SDK)
+
+   R1 — Quality scoring: examiner prompt emits hidden [SCORE:N] per turn
+   R2 — Timestamps: each history entry stores timestamp: Date.now()
+   R5 — Quota: all calls go through callGemini() from tools.js
    ============================================================================ */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from '@google/genai';
+import { callGemini } from './tools.js';
+import { AI_MODELS } from '../config/aiConfig.js';
 
-// ============================================================================
-// CONFIGURATION
-// ============================================================================
+// ── Config ────────────────────────────────────────────────────────────────────
 
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "demo_fake_key_12345";
-const MODEL_NAME = 'gemini-3-flash-preview';
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const MODEL = AI_MODELS.VIVA;
 
 let genAI = null;
-if (API_KEY && API_KEY !== "demo_fake_key_12345") {
-    genAI = new GoogleGenerativeAI(API_KEY);
-    console.log("✅ [VIVA] Gemini initialized with API key");
+if (API_KEY) {
+    try {
+        genAI = new GoogleGenAI({ apiKey: API_KEY });
+    } catch (e) {
+        console.error('[VIVA] SDK init failed:', e.message);
+    }
 } else {
-    console.warn("⚠️ [VIVA] No API key - demo mode");
+    console.warn('[VIVA] No API key — demo mode active.\nGet a free key at https://aistudio.google.com/app/apikey');
 }
 
-// In-Memory Session Store
+// In-memory session store
 const sessions = new Map();
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const extractText = (response) => {
-    try {
-        if (response?.text) return response.text();
-        if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-            return response.candidates[0].content.parts[0].text;
-        }
-        return "I couldn't process that response.";
-    } catch (e) {
-        console.error("Text extraction error:", e);
-        return "Error processing response.";
-    }
+// R1 — parse the hidden [SCORE:N] tag the examiner embeds
+const parseScore = (text) => { const m = text.match(/\[SCORE:([1-5])\]/); return m ? parseInt(m[1], 10) : null; };
+const stripScore = (text) => text.replace(/\s*\[SCORE:[1-5]\]\s*$/, '').trim();
+
+const formatError = (err) => {
+    if (err.message?.includes('API_KEY_INVALID') || err.message?.includes('400'))
+        return 'API key invalid or revoked. Get a new key at https://aistudio.google.com/app/apikey';
+    if (err.message?.includes('429'))
+        return 'API quota exceeded. Wait a moment or check https://aistudio.google.com';
+    return err.message;
 };
 
-const getLectureContext = async (lectureId) => {
-    const topic = lectureId.replace(/_/g, ' ').replace(/leacture/i, 'Lecture');
-    return `TOPIC: ${topic}`;
-};
-
-// ============================================================================
-// PUBLIC API FUNCTIONS
-// ============================================================================
+// ── Public API ────────────────────────────────────────────────────────────────
 
 export const startVivaSession = async (lectureId) => {
-    console.log("🎤 [VIVA] Starting session for:", lectureId);
-
     if (!genAI) {
-        console.warn("⚠️ No valid API Key. Running in demo mode.");
-        const demoSessionId = "demo_session";
-        sessions.set(demoSessionId, {
-            lectureId,
-            lectureTitle: lectureId.replace(/_/g, ' '),
-            history: [],
-            questionCount: 1
-        });
-        return {
-            sessionId: demoSessionId,
-            message: "Welcome to the demo exam. What do you understand about this topic?"
-        };
+        const demoId = 'demo_session';
+        sessions.set(demoId, { lectureId, lectureTitle: lectureId.replace(/_/g, ' '), history: [], questionCount: 1, turnScores: [] });
+        return { sessionId: demoId, message: 'Demo mode: No API key found. Add VITE_GEMINI_API_KEY to your .env and restart.' };
     }
 
     const sessionId = `viva_${Date.now()}`;
     const lectureTitle = lectureId.replace(/_/g, ' ').replace(/leacture/i, 'Lecture');
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: MODEL_NAME,
-            generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 712,
-            }
-        });
+        const firstQuestion = await callGemini(genAI, MODEL, [{
+            text: `You are an oral examiner. Ask ONE clear, concise question to test the student's understanding of: ${lectureTitle}. Keep it under 2 sentences. Plain text only, no markdown.`
+        }]);
 
-        const firstQuestionPrompt = `You are an oral examiner. Ask ONE clear Question then Ask new Question , concise question to test the student's understanding of: ${lectureTitle}. Keep it under 2 sentences. No formatting or markdown.`;
-
-        console.log("❓ Generating first question...");
-        const result = await model.generateContent(firstQuestionPrompt);
-        const firstQuestion = extractText(result.response)
-            .replace(/\*\*/g, '')
-            .replace(/\*/g, '')
-            .trim();
-
-        console.log("✅ First question:", firstQuestion);
-
-        // Store session with history starting with user kickstart (required by Gemini chat)
         sessions.set(sessionId, {
-            lectureId,
-            lectureTitle,
+            lectureId, lectureTitle,
             history: [
-                { role: 'user', parts: [{ text: 'I am ready for my oral exam.' }] },
-                { role: 'model', parts: [{ text: firstQuestion }] }
+                { role: 'user', parts: [{ text: 'I am ready for my oral exam.' }], timestamp: Date.now() },  // R2
+                { role: 'model', parts: [{ text: firstQuestion }], timestamp: Date.now() },  // R2
             ],
-            questionCount: 1
+            questionCount: 1,
+            turnScores: [],
         });
 
-        return {
-            sessionId,
-            message: firstQuestion
-        };
+        return { sessionId, message: firstQuestion };
 
     } catch (error) {
-        console.error("❌ Session Start Failed!");
-        console.error("❌ Error:", error.message);
-        console.error("❌ Full error:", error);
-
-        // Fallback to demo mode on error
-        const demoSessionId = "demo_session";
-        sessions.set(demoSessionId, {
-            lectureId,
-            lectureTitle: lectureId.replace(/_/g, ' '),
-            history: [],
-            questionCount: 1
-        });
-        return {
-            sessionId: demoSessionId,
-            message: "I'm having trouble connecting, but let's begin. What is the core concept of this topic?"
-        };
+        const reason = formatError(error);
+        console.error('[VIVA] Session start failed:', reason);
+        // Surface the real error rather than silently going demo
+        throw new Error(reason);
     }
 };
 
 export const processVivaTurn = async (sessionId, userAudioText, currentRound, totalRounds) => {
-    console.log(`🎤 [VIVA] Processing turn - Round ${currentRound}/${totalRounds}`);
-    console.log(`📝 User said: "${userAudioText}"`);
-
     const session = sessions.get(sessionId);
+    if (!session) throw new Error('Session expired or not found. Please restart.');
 
-    if (!session) {
-        throw new Error("Session expired or not found. Please restart.");
-    }
-
-    // Demo mode handling
-    if (sessionId === "demo_session" || !genAI) {
+    if (sessionId === 'demo_session' || !genAI) {
         const demoResponses = [
-            "Interesting perspective. Can you elaborate on that?",
+            'Interesting perspective. Can you elaborate on that?',
             "That's a good start. What evidence supports your answer?",
-            "I see. How does this concept relate to practical applications?",
-            "Good point. Can you explain the underlying mechanism?",
-            "Thank you. What are the potential challenges with this approach?"
+            'How does this concept relate to practical applications?',
+            'Good point. Can you explain the underlying mechanism?',
+            'Thank you. What are the potential challenges with this approach?',
         ];
-        const response = demoResponses[Math.min(currentRound - 1, demoResponses.length - 1)];
-        return { message: response };
+        return { message: demoResponses[Math.min(currentRound - 1, demoResponses.length - 1)], score: null };
     }
+
+    // R2 — store timestamp when the user turn arrives
+    session.history.push({ role: 'user', parts: [{ text: userAudioText }], timestamp: Date.now() });
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: MODEL_NAME,
-            generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 512,
-            }
-        });
+        const conversationContext = session.history
+            .map(h => `${h.role === 'model' ? 'Examiner' : 'Student'}: ${h.parts[0].text}`)
+            .join('\n');
 
-        // Add user response to history
-        session.history.push({
-            role: 'user',
-            parts: [{ text: userAudioText }]
-        });
-
-        // Build conversation context
-        const conversationContext = session.history.map(h =>
-            `${h.role === 'model' ? 'Examiner' : 'Student'}: ${h.parts[0].text}`
-        ).join('\n');
-
-        // Create prompt based on round
         let instructions;
         if (currentRound >= totalRounds) {
-            instructions = `FINAL ROUND: Give a brief assessment of their answer, then provide a 2-sentence summary of their overall performance. End with "The exam is now concluded."`;
+            instructions = `FINAL ROUND: Give a brief assessment of their answer, then a 2-sentence summary of their overall performance. End with "The exam is now concluded."
+Do NOT include a [SCORE:N] tag in the final round.`;
         } else {
+            // R1 — embed a hidden quality score in every non-final response
             instructions = `REQUIRED FORMAT:
-1. First sentence: Evaluate their answer (correct/partially correct/incorrect) with a brief explanation.
+1. First sentence: Evaluate their answer (correct / partially correct / incorrect) with a brief explanation.
 2. Second sentence: Ask ONE new question about ${session.lectureTitle}.
+3. On a new line at the very end, write exactly: [SCORE:N] where N is 1–5.
+   (1 = very poor, 2 = poor, 3 = adequate, 4 = good, 5 = excellent)
+   This tag is hidden from the student.
 
-CRITICAL: You MUST end your response with a question mark (?). Never end without asking a question.`;
+CRITICAL: You MUST end your visible response with a question mark (?).`;
         }
 
         const prompt = `You are a formal academic examiner conducting a Viva Voce exam on: ${session.lectureTitle}
@@ -189,49 +127,50 @@ ${conversationContext}
 ${instructions}
 
 Rules:
-- Plain text only, no markdown or formatting
+- Plain text only, no other markdown or formatting
 - Be direct and professional
-- Maximum 3 sentences
-- ALWAYS end with a question (unless final round)`;
+- Maximum 3 sentences (excluding the [SCORE:N] tag)`;
 
-        const result = await model.generateContent(prompt);
-        const responseText = extractText(result.response)
-            .replace(/\*\*/g, '')
-            .replace(/\*/g, '')
-            .trim();
+        const rawResponse = await callGemini(genAI, MODEL, [{ text: prompt }]);
 
-        console.log("✅ AI Response:", responseText);
+        // R1 — extract and strip the score tag before showing to student
+        const turnScore = parseScore(rawResponse);
+        const responseText = stripScore(rawResponse);
 
-        // Add AI response to history
-        session.history.push({
-            role: 'model',
-            parts: [{ text: responseText }]
-        });
+        if (turnScore !== null) session.turnScores.push({ round: currentRound, score: turnScore });
 
+        // R2 — store timestamp with the model's turn
+        session.history.push({ role: 'model', parts: [{ text: responseText }], timestamp: Date.now() });
         session.questionCount++;
 
-        return { message: responseText };
+        return { message: responseText, score: turnScore };
 
     } catch (error) {
-        console.error("❌ Turn Processing Failed:", error);
-        return { message: "I didn't catch that clearly. Could you please repeat your answer?" };
+        const reason = formatError(error);
+        console.error('[VIVA] Turn failed:', reason);
+        return { message: `I encountered an issue: ${reason}`, score: null };
     }
 };
 
 export const endVivaSession = async (sessionId) => {
-    console.log("🏁 [VIVA] Ending session:", sessionId);
     const session = sessions.get(sessionId);
     sessions.delete(sessionId);
+    if (!session) return null;
 
-    if (session) {
-        return {
-            lectureId: session.lectureId,
-            questionsAsked: session.questionCount,
-            transcript: session.history
-        };
-    }
-    return null;
+    const scores = session.turnScores.map(t => t.score);
+    const avgScore = scores.length > 0
+        ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+        : null;
+
+    return {
+        lectureId: session.lectureId,
+        questionsAsked: session.questionCount,
+        qualityScore: avgScore,
+        turnScores: session.turnScores,
+        transcript: session.history.map(h => ({
+            role: h.role === 'model' ? 'Examiner' : 'Student',
+            message: h.parts[0].text,
+            timestamp: new Date(h.timestamp).toISOString(),   // R2 — real per-message times
+        })),
+    };
 };
-
-console.log("✅ Viva Gemini Service Initialized");
-console.log(`📊 API Key: ${API_KEY ? 'Configured' : 'Missing (demo mode)'}`);

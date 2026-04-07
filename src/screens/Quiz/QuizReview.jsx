@@ -95,6 +95,7 @@ const QuizReview = ({ quiz, answers, lectureId, onExit }) => {
                         quiz={quiz}
                         answers={answers}
                         lectureId={lectureId}
+                        questionGrades={gradingResults.questionGrades || []}
                     />
                 </div>
 

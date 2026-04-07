@@ -131,7 +131,7 @@ function App() {
             selectedLecture={selectedLecture}
           />
         )}
-        {activeScreen === 'kb' && <KnowledgeBaseScreen />}
+        {activeScreen === 'kb' && <KnowledgeBaseScreen onBack={() => setActiveScreen('chat')} />}
         {activeScreen === 'quiz' && <QuizModeScreen onExit={() => setActiveScreen('chat')} />}
         {activeScreen === 'viva' && <VivaModeScreen onExit={() => setActiveScreen('chat')} />}
       </ChatLayout>

@@ -102,7 +102,8 @@ const ChatScreen = ({ currentRole, selectedLecture }) => {
         },
         greeting: {
             fontSize: '2rem',
-            fontWeight: 700,
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 500,
             color: 'var(--color-text-primary)',
             marginBottom: '0.5rem',
             letterSpacing: '-0.025em',

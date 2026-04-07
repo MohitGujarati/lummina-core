@@ -1,46 +1,47 @@
 :root {
-  /* Colors - Zinc/Slate Palette (Linear/Vercel inspired) */
-  --color-primary: #18181b;
-  /* Zinc 900 - Deep, rich black */
-  --color-primary-light: #27272a;
-  /* Zinc 800 */
+  /* Colors - Claude/Anthropic Design System */
+  --color-primary: #141413;
+  /* Anthropic Near Black */
+  --color-primary-light: #4d4c48;
+  /* Charcoal Warm */
 
-  /* Brand/Accent - Refined Indigo/Violet */
-  --color-accent: #4f46e5;
-  /* Indigo 600 */
-  --color-accent-hover: #4338ca;
-  /* Indigo 700 */
-  --color-accent-subtle: #eff6ff;
-  /* Slate 50 */
+  /* Brand/Accent - Terracotta */
+  --color-accent: #c96442;
+  /* Terracotta Brand */
+  --color-accent-hover: #d97757;
+  /* Coral Accent */
+  --color-accent-subtle: #f0eee6;
+  /* Border Cream */
 
   /* Backgrounds */
-  --color-bg-app: #f8fafc;
-  /* Slate 50 - Very subtle tint */
-  --color-bg-surface: #ffffff;
-  /* Pure white */
-  --color-bg-sidebar: #fafafa;
-  /* Slate 50/Zinc 50 */
+  --color-bg-app: #f5f4ed;
+  /* Parchment - Very subtle warmth */
+  --color-bg-surface: #faf9f5;
+  /* Ivory - Very light surface */
+  --color-bg-sidebar: #f5f4ed;
+  /* Match app background */
 
   /* Chat Bubbles */
-  --color-bg-chat-user: #18181b;
-  /* Zinc 900 (High contrast) */
-  --color-bg-chat-bot: #f4f4f5;
-  /* Zinc 100 */
+  --color-bg-chat-user: #141413;
+  /* Near Black */
+  --color-bg-chat-bot: #faf9f5;
+  /* Ivory */
 
   /* Text */
-  --color-text-primary: #09090b;
-  /* Zinc 950 */
-  --color-text-secondary: #52525b;
-  /* Zinc 600 */
-  --color-text-tertiary: #a1a1aa;
-  /* Zinc 400 */
-  --color-text-inverse: #ffffff;
+  --color-text-primary: #141413;
+  /* Near Black */
+  --color-text-secondary: #5e5d59;
+  /* Olive Gray */
+  --color-text-tertiary: #87867f;
+  /* Stone Gray */
+  --color-text-inverse: #faf9f5;
+  /* Ivory */
 
-  /* Borders - Ultra subtle */
-  --color-border: rgba(0, 0, 0, 0.08);
-  /* Very light border */
-  --color-border-hover: rgba(0, 0, 0, 0.12);
-  /* Slightly darker on hover */
+  /* Borders - Cream tinted */
+  --color-border: #f0eee6;
+  /* Border Cream */
+  --color-border-hover: #e8e6dc;
+  /* Border Warm */
 
   /* Status */
   --color-success: #10b981;
@@ -51,7 +52,9 @@
   /* Amber 500 */
 
   /* Typography */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Anthropic Serif", Georgia, serif;
+  --font-sans: "Anthropic Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Anthropic Mono", "Courier New", Courier, monospace;
 
   /* Radius - Modern & Soft */
   --radius-sm: 0.375rem;
@@ -65,11 +68,11 @@
   --radius-pill: 9999px;
 
   /* Shadows - Layered & Smooth */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 0 0 1px #d1cfc5;
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.05); /* whisper */
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  --shadow-inner: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 
   /* Transitions */
   --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);

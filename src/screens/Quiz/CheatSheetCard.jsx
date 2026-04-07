@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { generateStudyGuide } from '../../services/gemini';
 
-const CheatSheetCard = ({ quizTitle, weakPoints, quiz, answers, lectureId }) => {
+const CheatSheetCard = ({ quizTitle, weakPoints, quiz, answers, lectureId, questionGrades }) => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [cheatSheet, setCheatSheet] = useState(null);
     const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ const CheatSheetCard = ({ quizTitle, weakPoints, quiz, answers, lectureId }) => 
 
         try {
             console.log("🎯 Generating cheat sheet...");
-            const markdown = await generateStudyGuide(quiz, answers, lectureId);
+            const markdown = await generateStudyGuide(quiz, answers, lectureId, questionGrades);
             setCheatSheet(markdown);
             console.log("✅ Cheat sheet generated successfully");
         } catch (err) {
