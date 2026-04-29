@@ -1,56 +1,194 @@
-# Lummina
-### The Future of Active Learning
+# Lummina — AI-Powered Learning Platform
 
-> Stop reading. Start mastering.
-> Lummina transforms passive study materials into proactive, intelligent learning experiences.
-
-<br>
-
-## 1. The Crisis of Passive Consumption
-
-Today’s educational environments are optimized for content delivery, not knowledge synthesis. Students drown in a sea of PDFs and lecture recordings, suffering from the "passive learning illusion," while educators lack the bandwidth to evaluate comprehension before exam day.
-
-**Lummina is not a generic chatbot.** It is an Agentic Learning Ecosystem—a suite of specialized AI personas that ingest an educator's specific course material and proactively guide students from passive consumption to active mastery.
+Lummina is an AI-driven study companion for students and teachers. Upload lecture materials, chat with an AI tutor, generate quizzes, practice viva interviews, and manage your knowledge base — all in one place.
 
 ---
 
-## 2. Who is Lummina For?
+## Tech Stack
 
-### The Modern Student
-Drowning in content and experiencing the "feedback delay" (only finding out they don't understand the material after failing an exam). They need a 24/7 private tutor that forces active recall, pinpoints logical flaws, and prepares them for high-stakes environments.
-
-### The Educator
-Spending hours creating content with zero visibility into student digestion before midterms. They require a system that ingests raw materials and autonomously scales their teaching presence without demanding extra hours.
-
----
-
-## 3. The Lummina Ecosystem
-
-Lummina bridges the gap between studying and mastering through four core interactions.
-
-**📚 Frictionless Knowledge Base**
-Educators seamlessly upload syllabi, lecture recordings, and web links. Lummina instantly transforms these static files into an interactive, strictly bounded knowledge base. Hit "Record" during a live lecture to instantly transcribe and save the exact spoken words into the AI's core memory.
-
-**💬 The "Night Before" Tutor Chat**
-Stuck on a specific slide at 2:00 AM? Students can chat directly with their documents. Lummina acts as an expert tutor, utilizing *only* the provided materials to explain concepts securely and accurately—eliminating hallucinations.
-
-**🧠 Adaptive Quizzing (The Logic Check)**
-Lummina doesn't just wait for prompts; it tests you back. In Quiz Mode, if a student answers incorrectly, it pauses to explain *why* their logic was flawed based on the exact slide or transcript, correcting the behavior immediately.
-
-**🎙️ Oral Viva Simulator**
-Simulate the high-stakes environment of a professor's office hour or a clinical boardroom. Lummina speaks scenarios out loud, listens to the student's verbal response, evaluates fluency, and dynamically alters the next question based on confidence.
-
-<br>
-
-> **Lummina isn't replacing the teacher. It is perfectly scaling them.**
+- **Frontend** — React 19, Vite, Framer Motion
+- **Backend** — Node.js, Express, WebSockets
+- **AI** — Google Gemini API
+- **Database & Auth** — Supabase
 
 ---
 
-## 4. Why Lummina Wins
+## Prerequisites
 
-* **Strictly Bounded AI:** We don't hallucinate. Answers are anchored entirely to the specific materials uploaded by the professor. 
-* **Proactive Testing:** Most AI tools wait for you to type. Lummina takes the initiative, assuming the role of the interrogator to force active recall.
-* **Human-Centric Interface:** Designed to mimic a sophisticated library, reducing digital fatigue and keeping focus on learning, not fighting the software.
+- Node.js 18+
+- A [Google AI Studio](https://aistudio.google.com/app/apikey) account (for Gemini API key)
+- A [Supabase](https://supabase.com) project
 
-<br>
+---
 
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd Lummina
+```
+
+### 2. Set up the Backend
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file inside `backend/`:
+
+```env
+GEMINI_API_KEY=your-google-gemini-api-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+PORT=3001
+ALLOWED_ORIGIN=http://localhost:5173
+```
+
+Start the backend server:
+
+```bash
+npm run dev
+```
+
+The server will start at `http://localhost:3001`.
+
+---
+
+### 3. Set up the Frontend
+
+Open a new terminal:
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file inside `frontend/`:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_API_BASE_URL=http://localhost:3001
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`.
+
+---
+
+### 4. Set up the Database
+
+Run the SQL schema against your Supabase project:
+
+- Go to your Supabase dashboard → SQL Editor
+- Paste and run the contents of `supabase/schema.sql`
+
+---
+
+## Features
+
+### Authentication
+Sign up and log in as a **Student** or **Teacher**. Role-based access controls what each user can see and do.
+
+<img width="1866" height="1016" alt="image" src="https://github.com/user-attachments/assets/7e6b5fcc-2a7d-49db-91f2-efc1fba49c5d" />
+
+
+---
+
+### Student Enrollment
+Students join subjects using a teacher-provided subject code. Once enrolled, they get access to all uploaded materials and AI features for that subject.
+
+<img width="1855" height="990" alt="image" src="https://github.com/user-attachments/assets/ce522b6f-f1ba-4e9b-a075-20d391877080" />
+
+
+---
+
+### Knowledge Base / ### Teacher Dashboard
+Teachers can create subjects, generate subject codes, and share them with students. Upload lecture materials (PDFs, documents) per subject and organize them into chapters.
+Browse and manage all uploaded lecture files per subject. Upload new documents, organize them into chapters, and delete files — all synced to Supabase Storage.
+
+<img width="1855" height="1011" alt="image" src="https://github.com/user-attachments/assets/b00309fd-da9d-4948-becb-e30971396eaf" />
+
+
+---
+
+### AI Chat
+Ask questions about your lecture content and get answers powered by Gemini. The AI has context of your uploaded materials and responds in a conversational way.
+
+<img width="1852" height="1016" alt="image" src="https://github.com/user-attachments/assets/ef889dd2-0141-492e-87c3-dcf392ef0350" />
+
+
+---
+
+### Quiz Mode
+Generate AI-powered quizzes based on your enrolled subjects. Answer multiple-choice questions and get an instant review with explanations. Results are saved in `.toon` format.
+
+<img width="1841" height="1012" alt="image" src="https://github.com/user-attachments/assets/90eb37b6-4392-4216-aa61-70810b4ca815" />
+<img width="1096" height="635" alt="image" src="https://github.com/user-attachments/assets/151eddb9-ae20-421e-9fc0-b0a62fa1a0e4" />
+
+
+---
+
+### Viva Mode
+Practice oral exams with an AI interviewer. The AI asks questions based on your lecture content, listens to your responses via microphone (live WebSocket), and gives follow-up questions — simulating a real viva.
+
+<img width="1838" height="975" alt="image" src="https://github.com/user-attachments/assets/b28676ce-90b5-440d-9c59-5bda57575a88" />
+
+
+
+---
+
+### Neuro Mode
+*(Coming soon — visual mind-map based learning)*
+
+---
+
+## Project Structure
+
+```
+Lummina/
+├── backend/
+│   ├── routes/         # Express route handlers (gemini, viva, vivaLive)
+│   ├── services/       # AI agent logic and file loaders
+│   └── index.js        # Server entry point
+├── frontend/
+│   ├── public/
+│   └── src/
+│       ├── components/ # Reusable UI components
+│       ├── context/    # React context (auth, subjects, theme, toast)
+│       ├── screens/    # Page-level components per feature
+│       ├── services/   # Supabase and Gemini API clients
+│       └── styles/     # Theme and color utilities
+└── supabase/
+    └── schema.sql      # Database schema
+```
+
+---
+
+## Environment Variables Reference
+
+### `backend/.env`
+
+| Variable | Description |
+|---|---|
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only) |
+| `PORT` | Port for the Express server (default: 3001) |
+| `ALLOWED_ORIGIN` | Frontend URL for CORS (default: localhost:5173) |
+
+### `frontend/.env`
+
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `VITE_API_BASE_URL` | Backend server URL (default: http://localhost:3001) |
