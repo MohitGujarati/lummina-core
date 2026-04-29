@@ -1,0 +1,190 @@
+/* Landing Page scoped design system (Claude-inspired) */
+
+@font-face {
+    font-family: 'Anthropic Serif';
+    src: local('Georgia');
+    /* Fallback for the custom font */
+}
+
+@font-face {
+    font-family: 'Anthropic Sans';
+    src: local('Inter'), local('Arial'), sans-serif;
+}
+
+@font-face {
+    font-family: 'Anthropic Mono';
+    src: local('Consolas'), local('Courier New'), monospace;
+}
+
+.landing-theme {
+    /* Light Theme (Parchment) */
+    --landing-bg-primary: #f5f4ed;
+    --landing-bg-secondary: #faf9f5;
+    --landing-bg-tertiary: #e8e6dc;
+    --landing-bg-highlight: #ffffff;
+
+    --landing-text-primary: #141413;
+    --landing-text-secondary: #5e5d59;
+    --landing-text-tertiary: #87867f;
+    --landing-text-accent: #24386c;
+    --landing-text-inverse: #f5f4ed;
+
+    --landing-border: #f0eee6;
+    --landing-border-strong: #e8e6dc;
+
+    --landing-ring: #d1cfc5;
+
+    --landing-cta-bg: #24386c;
+    --landing-cta-text: #faf9f5;
+
+    --landing-nav-bg: rgba(245, 244, 237, 0.85);
+
+    --landing-shadow-whisper: 0px 4px 24px rgba(0, 0, 0, 0.05);
+
+    /* Fonts */
+    --landing-font-serif: 'Anthropic Serif', Georgia, serif;
+    --landing-font-sans: 'Anthropic Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --landing-font-mono: 'Anthropic Mono', 'Courier New', Courier, monospace;
+
+    font-family: var(--landing-font-sans);
+    background-color: var(--landing-bg-primary);
+    color: var(--landing-text-primary);
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.landing-theme.dark {
+    /* Dark Theme (Near Black) */
+    --landing-bg-primary: #141413;
+    --landing-bg-secondary: #30302e;
+    --landing-bg-tertiary: #4d4c48;
+    --landing-bg-highlight: #141413;
+
+    --landing-text-primary: #b0aea5;
+    --landing-text-secondary: #87867f;
+    --landing-text-tertiary: #5e5d59;
+    --landing-text-inverse: #141413;
+
+    --landing-border: #30302e;
+    --landing-border-strong: #4d4c48;
+
+    --landing-ring: rgba(255, 255, 255, 0.15);
+
+    --landing-cta-bg: #24386c;
+    --landing-cta-text: #faf9f5;
+
+    --landing-nav-bg: rgba(20, 20, 19, 0.85);
+
+    --landing-shadow-whisper: 0px 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Base elements inside .landing-theme */
+.landing-theme h1,
+.landing-theme h2,
+.landing-theme h3,
+.landing-theme h4 {
+    font-family: var(--landing-font-serif);
+    font-weight: 500;
+}
+
+.landing-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--landing-border);
+    background: var(--landing-nav-bg);
+    backdrop-filter: blur(12px);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.landing-nav a {
+    color: var(--landing-text-secondary);
+    text-decoration: none;
+    font-size: 1.06rem;
+    transition: color 0.15s;
+    font-family: var(--landing-font-sans);
+}
+
+.landing-nav a:hover {
+    color: var(--landing-text-primary);
+}
+
+.landing-btn-primary {
+    background-color: var(--landing-cta-bg);
+    color: var(--landing-cta-text);
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    /* comfortably rounded */
+    font-family: var(--landing-font-sans);
+    font-size: 0.94rem;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px var(--landing-cta-bg);
+    /* ring shadow */
+    transition: opacity 0.2s;
+}
+
+.landing-btn-primary:hover {
+    opacity: 0.9;
+}
+
+.landing-btn-secondary {
+    background-color: var(--landing-bg-tertiary);
+    color: var(--landing-text-primary);
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-family: var(--landing-font-sans);
+    font-size: 0.94rem;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px var(--landing-ring);
+    transition: box-shadow 0.2s, background-color 0.2s;
+}
+
+.landing-btn-secondary:hover {
+    box-shadow: 0 0 0 1px var(--landing-text-secondary);
+}
+
+.landing-card {
+    background-color: var(--landing-bg-secondary);
+    border: 1px solid var(--landing-border);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: var(--landing-shadow-whisper);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-section {
+    padding: 96px 40px;
+    border-bottom: 1px solid var(--landing-border);
+}
+
+.landing-section.alternate {
+    background-color: var(--landing-bg-secondary);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--landing-text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.theme-toggle-btn:hover {
+    color: var(--landing-text-primary);
+    background-color: var(--landing-bg-tertiary);
+}

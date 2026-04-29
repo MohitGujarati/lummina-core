@@ -1,0 +1,15 @@
+quizTitle: "Quiz: ef66d794-4687-40fb-9896-5fd16a9e9206"
+timestamp: "2026-04-29T01:59:47.311Z"
+totalQuestions: 11
+responses[11]{id,question,type,userAnswer}:
+  1,What is the specific purpose of the second-order derivative Laplacian filter in the proposed preprocessing pipeline?,mcq,No Answer
+  2,Which three pre-trained CNN architectures are integrated into the Multi-CNN feature-extraction ensemble?,mcq,No Answer
+  3,"In the evolutionary feature selection stage, how is the optimized, reduced feature vector (X_opt) calculated?",mcq,No Answer
+  4,"According to the Clinical Diagnostic Interpretability module, a probability score (y^) of 0.45 would be categorized as:",mcq,No Answer
+  5,Why is achieving a high recall score (specifically the 1.000 achieved in this study) considered critical for medical screening applications?,short,No Answer
+  6,Explain the role of the Genetic Algorithm (GA) in mitigating the 'computational bottleneck' created by the Multi-CNN ensemble.,short,No Answer
+  7,How does the system utilize Global Average Pooling (GAP) during the feature aggregation process?,short,No Answer
+  8,"What are the two primary categories of handwriting samples included in the dataset used for this research, and how many samples does the 'patient group' contain?",short,No Answer
+  9,Compare and contrast the roles of the Average Blur filter and the Laplacian filter in the context of handwriting-based Parkinson's detection. How do they work together to improve model accuracy?,essay,No Answer
+  10,Discuss the trade-offs between using a single-model CNN architecture versus the Multi-CNN ensemble approach described in the paper. How does the proposed methodology address the risks associated with the ensemble approach?,essay,No Answer
+  11,Evaluate the clinical significance of the 'Clinical Diagnostic Interpretability and Output Categorization' module. Why is probability-based tagging more useful to healthcare providers than a simple binary outcome?,essay,No Answer

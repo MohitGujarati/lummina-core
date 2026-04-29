@@ -7,9 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
+frontend/dist
+frontend/dist-ssr
 *.local
 
 # Editor directories and files
@@ -22,10 +27,26 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+Thumbs.db
+desktop.ini
 
-# Environment variables
+# Binary / large assets (lecture uploads only)
+frontend/src/assets/leacture_*/
+
+# Environment variables — NEVER commit real secrets
 .env
 .env.local
 .env.*
 .env.example
+frontend/.env
+frontend/.env.*
+frontend/.env.example
+backend/.env
+backend/.env.*
+backend/.env.example
 
+# Documentation and Notes
+*.md
+*.txt
+*.docx
+.claude/
