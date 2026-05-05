@@ -140,8 +140,7 @@ Generate AI-powered quizzes based on your enrolled subjects. Answer multiple-cho
 ### Viva Mode
 Practice oral exams with an AI interviewer. The AI asks questions based on your lecture content, listens to your responses via microphone (live WebSocket), and gives follow-up questions — simulating a real viva.
 
-<img width="1838" height="975" alt="image" src="https://github.com/user-attachments/assets/b28676ce-90b5-440d-9c59-5bda57575a88" />
-
+<img width="1600" height="900" alt="WhatsApp Image 2026-04-29 at 6 22 51 PM" src="https://github.com/user-attachments/assets/3cb21a57-d067-4191-846e-8d917342661e" />
 
 
 ---
